@@ -107,6 +107,19 @@ final class BlogController extends AbstractController
         ]);
     }
 
+    #[Route('/posts/{slug:post}.md', name: 'blog_post_markdown', requirements: ['slug' => Requirement::ASCII_SLUG], methods: ['GET'])]
+    public function postMarkdown(Post $post): Response
+    {
+        header('Content-Type: text/markdown; charset=utf-8');
+        header(\sprintf('Content-Disposition: attachment; filename="%s.md"', $post->getSlug()));
+
+        echo '# ', $post->getTitle(), "\n\n";
+        echo '_', $post->getAuthor()?->getFullName(), ', ', $post->getPublishedAt()->format('Y-m-d'), "_\n\n";
+        echo $post->getContent(), "\n";
+
+        exit;
+    }
+
     /**
      * NOTE: The #[MapEntity] mapping is required because the route parameter
      * (postSlug) doesn't match any of the Doctrine entity properties (slug).

@@ -80,6 +80,12 @@
         ('base.html.twig') for this block ('sidebar'). This is a very convenient way
         to share common contents in different templates
     #}
+    <div class="section">
+        <a class="btn btn-outline-secondary btn-block" href="{{ path('blog_post_markdown', {slug: post.slug}) }}">
+            <twig:ux:icon name="tabler:download"/> Download as Markdown
+        </a>
+    </div>
+
     {{ include('blog/_recently_viewed.html.twig') }}
 
     {{ parent() }}
