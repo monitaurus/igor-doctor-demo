@@ -25,11 +25,6 @@ use Twig\Attribute\AsTwigFunction;
  */
 final class AppExtension
 {
-    /**
-     * @var list<array{code: string, name: string}>|null
-     */
-    private ?array $locales = null;
-
     // The $locales argument is injected thanks to the service container.
     // See https://symfony.com/doc/current/service_container.html#binding-arguments-by-name-or-type
     public function __construct(
@@ -49,29 +44,22 @@ final class AppExtension
     #[AsTwigFunction('locales')]
     public function getLocales(): array
     {
-        if (null !== $this->locales) {
-            return $this->locales;
-        }
-
-        $this->locales = [];
+        $locales = [];
 
         foreach ($this->enabledLocales as $localeCode) {
-            $this->locales[] = ['code' => $localeCode, 'name' => Locales::getName($localeCode, $localeCode)];
+            $locales[] = ['code' => $localeCode, 'name' => Locales::getName($localeCode, $localeCode)];
         }
 
-        return $this->locales;
+        return $locales;
     }
 
     /**
      * Estimated reading time of a post, in minutes (200 words per minute).
-     * Memoized per post: the filter is used on every teaser of the blog index.
      */
     #[AsTwigFilter('reading_time')]
     public function readingTime(Post $post): int
     {
-        static $minutes = [];
-
-        return $minutes[$post->getId()] ??= max(1, (int) ceil(str_word_count(strip_tags((string) $post->getContent())) / 200));
+        return max(1, (int) ceil(str_word_count(strip_tags((string) $post->getContent())) / 200));
     }
 
     /**

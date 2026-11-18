@@ -9,12 +9,13 @@ namespace App\Service;
 use App\Entity\Post;
 use App\Entity\User;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * Records what administrators do with posts. Entries are buffered and written to
  * the audit file in one go, when the request is over.
  */
-final class AdminAuditLog
+final class AdminAuditLog implements ResetInterface
 {
     /**
      * @var list<string>
@@ -56,10 +57,12 @@ final class AdminAuditLog
         return array_reverse($entries);
     }
 
-    public function __destruct()
+    public function reset(): void
     {
         if ([] !== $this->buffer) {
             file_put_contents($this->file, implode('', $this->buffer), \FILE_APPEND | \LOCK_EX);
         }
+
+        $this->buffer = [];
     }
 }

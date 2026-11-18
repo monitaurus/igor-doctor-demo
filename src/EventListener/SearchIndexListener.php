@@ -12,6 +12,7 @@ use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Events;
 use Psr\Log\LoggerInterface;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * Keeps the search index in sync: the posts created or changed by a flush are
@@ -19,7 +20,7 @@ use Psr\Log\LoggerInterface;
  */
 #[AsDoctrineListener(event: Events::onFlush)]
 #[AsDoctrineListener(event: Events::postFlush)]
-final class SearchIndexListener
+final class SearchIndexListener implements ResetInterface
 {
     /**
      * @var array<string, string> post slug => post title
@@ -54,6 +55,11 @@ final class SearchIndexListener
             'posts' => implode(', ', array_keys($this->postsToIndex)),
         ]);
 
+        $this->postsToIndex = [];
+    }
+
+    public function reset(): void
+    {
         $this->postsToIndex = [];
     }
 }

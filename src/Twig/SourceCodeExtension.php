@@ -15,6 +15,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\ErrorHandler\ErrorRenderer\FileLinkFormatter;
 use Twig\Attribute\AsTwigFunction;
 use Twig\Environment;
+use Symfony\Contracts\Service\ResetInterface;
 use Twig\TemplateWrapper;
 
 use function Symfony\Component\String\u;
@@ -28,7 +29,7 @@ use function Symfony\Component\String\u;
  * @author Ryan Weaver <weaverryan@gmail.com>
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
  */
-final class SourceCodeExtension
+final class SourceCodeExtension implements ResetInterface
 {
     /**
      * @var callable|null
@@ -46,6 +47,11 @@ final class SourceCodeExtension
     public function setController(?callable $controller): void
     {
         $this->controller = $controller;
+    }
+
+    public function reset(): void
+    {
+        $this->controller = null;
     }
 
     /**

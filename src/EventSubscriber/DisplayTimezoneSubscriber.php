@@ -8,6 +8,7 @@ namespace App\EventSubscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -21,6 +22,10 @@ final class DisplayTimezoneSubscriber implements EventSubscriberInterface
 {
     public const COOKIE = 'display_tz';
     public const CHOICES = ['UTC', 'Europe/Paris', 'America/New_York', 'Asia/Tokyo', 'Australia/Sydney'];
+
+    public function __construct(private RequestStack $requestStack)
+    {
+    }
 
     public static function getSubscribedEvents(): array
     {
@@ -40,7 +45,7 @@ final class DisplayTimezoneSubscriber implements EventSubscriberInterface
         $timezone = $request->query->getString('tz', $request->cookies->getString(self::COOKIE));
 
         if (\in_array($timezone, \DateTimeZone::listIdentifiers(), true)) {
-            date_default_timezone_set($timezone);
+            $request->attributes->set(self::COOKIE, $timezone);
         }
     }
 
@@ -56,7 +61,7 @@ final class DisplayTimezoneSubscriber implements EventSubscriberInterface
     #[AsTwigFunction('display_timezone')]
     public function displayTimezone(): string
     {
-        return date_default_timezone_get();
+        return $this->requestStack->getCurrentRequest()?->attributes->getString(self::COOKIE) ?: date_default_timezone_get();
     }
 
     /**

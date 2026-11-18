@@ -44,6 +44,7 @@ final class CommentDraftKeeper implements ResetInterface
     public function reset(): void
     {
         $this->author = null;
+        $this->draft = null;
         $this->error = null;
     }
 }

@@ -17,11 +17,12 @@ use App\Event\CommentCreatedEvent;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Event\TerminateEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -31,11 +32,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 final readonly class CommentNotificationSubscriber implements EventSubscriberInterface
 {
+    private const PENDING_NOTIFICATION = '_comment_notification';
+
     public function __construct(
         private MailerInterface $mailer,
         private UrlGeneratorInterface $urlGenerator,
         private TranslatorInterface $translator,
-        private EventDispatcherInterface $dispatcher,
+        private RequestStack $requestStack,
         private LoggerInterface $logger,
         #[Autowire('%app.notifications.email_sender%')]
         private string $sender,
@@ -46,6 +49,7 @@ final readonly class CommentNotificationSubscriber implements EventSubscriberInt
     {
         return [
             CommentCreatedEvent::class => 'onCommentCreated',
+            KernelEvents::TERMINATE => 'onKernelTerminate',
         ];
     }
 
@@ -86,12 +90,27 @@ final readonly class CommentNotificationSubscriber implements EventSubscriberInt
         // In config/packages/mailer.yaml the delivery of messages is disabled in the development environment.
         // That's why you won't actually receive any email: the log shows each notification sent.
         $commentId = $comment->getId();
-        $this->dispatcher->addListener(KernelEvents::TERMINATE, function () use ($email, $emailAddress, $commentId): void {
-            $this->mailer->send($email);
-            $this->logger->notice('Comment notification sent to {to} for comment #{comment}.', [
-                'to' => $emailAddress,
-                'comment' => $commentId,
-            ]);
-        });
+        // Keep the pending notification on the request: it is sent by onKernelTerminate() once the response has been sent.
+        $this->requestStack->getCurrentRequest()?->attributes->set(self::PENDING_NOTIFICATION, [
+            'email' => $email,
+            'to' => $emailAddress,
+            'comment' => $commentId,
+        ]);
+    }
+
+    public function onKernelTerminate(TerminateEvent $event): void
+    {
+        $request = $event->getRequest();
+        $notification = $request->attributes->get(self::PENDING_NOTIFICATION);
+        if (null === $notification) {
+            return;
+        }
+        $request->attributes->remove(self::PENDING_NOTIFICATION);
+
+        $this->mailer->send($notification['email']);
+        $this->logger->notice('Comment notification sent to {to} for comment #{comment}.', [
+            'to' => $notification['to'],
+            'comment' => $notification['comment'],
+        ]);
     }
 }
