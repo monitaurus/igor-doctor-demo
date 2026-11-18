@@ -18,6 +18,7 @@ use App\Event\CommentCreatedEvent;
 use App\Form\CommentType;
 use App\Repository\PostRepository;
 use App\Repository\TagRepository;
+use App\Service\Breadcrumbs;
 use App\Service\CommentDraftKeeper;
 use App\Service\RecentlyViewedPosts;
 use App\Service\TagCloud;
@@ -83,8 +84,10 @@ final class BlogController extends AbstractController
      * See https://symfony.com/doc/current/doctrine.html#automatically-fetching-objects-entityvalueresolver.
      */
     #[Route('/posts/{slug:post}', name: 'blog_post', requirements: ['slug' => Requirement::ASCII_SLUG], methods: ['GET'])]
-    public function postShow(Post $post, RecentlyViewedPosts $recentlyViewed): Response
+    public function postShow(Post $post, RecentlyViewedPosts $recentlyViewed, Breadcrumbs $breadcrumbs): Response
     {
+        $breadcrumbs->add((string) $post->getTitle(), $this->generateUrl('blog_post', ['slug' => $post->getSlug()]));
+
         // Symfony's 'dump()' function is an improved version of PHP's 'var_dump()' but
         // it's not available in the 'prod' environment to prevent leaking sensitive information.
         // It can be used both in PHP files and Twig templates, but it requires to
@@ -201,8 +204,10 @@ final class BlogController extends AbstractController
     }
 
     #[Route('/search', name: 'blog_search', methods: ['GET'])]
-    public function search(): Response
+    public function search(Breadcrumbs $breadcrumbs): Response
     {
+        $breadcrumbs->add('Search', $this->generateUrl('blog_search'));
+
         // Kept from the first version of the blog, before it used the Request object
         $query = isset($_GET['q']) ? trim((string) $_GET['q']) : '';
 

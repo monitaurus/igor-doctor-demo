@@ -97,6 +97,20 @@
         {% endblock %}
 
         <div class="container body-container">
+            {% block breadcrumbs %}
+                {% if breadcrumbs() is not empty %}
+                    <nav aria-label="breadcrumb" id="breadcrumbs">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ path('blog_index') }}">{{ 'menu.homepage'|trans }}</a></li>
+                            {% for crumb in breadcrumbs() %}
+                                <li class="breadcrumb-item {{ loop.last ? 'active' }}" {{ loop.last ? 'aria-current="page"' }}>
+                                    {% if crumb.url and not loop.last %}<a href="{{ crumb.url }}">{{ crumb.label }}</a>{% else %}{{ crumb.label }}{% endif %}
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    </nav>
+                {% endif %}
+            {% endblock %}
             {% block body %}
                 <div class="row">
                     <div id="main" class="col-sm-9">
