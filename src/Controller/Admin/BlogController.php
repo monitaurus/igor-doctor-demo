@@ -16,6 +16,7 @@ use App\Entity\User;
 use App\Form\PostType;
 use App\Repository\PostRepository;
 use App\Security\PostVoter;
+use App\Service\AdminAuditLog;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -76,6 +77,7 @@ final class BlogController extends AbstractController
         #[CurrentUser] User $user,
         Request $request,
         EntityManagerInterface $entityManager,
+        AdminAuditLog $auditLog,
     ): Response {
         $post = new Post();
         $post->setAuthor($user);
@@ -93,6 +95,7 @@ final class BlogController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($post);
             $entityManager->flush();
+            $auditLog->record($user, 'created', $post);
 
             // Flash messages are used to notify the user about the result of the
             // actions. They are deleted automatically from the session as soon
@@ -136,13 +139,14 @@ final class BlogController extends AbstractController
      */
     #[Route('/{id:post}/edit', name: 'admin_post_edit', requirements: ['id' => Requirement::POSITIVE_INT], methods: ['GET', 'POST'])]
     #[IsGranted('edit', subject: 'post', message: 'Posts can only be edited by their authors.')]
-    public function edit(Request $request, Post $post, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Post $post, EntityManagerInterface $entityManager, AdminAuditLog $auditLog, #[CurrentUser] User $user): Response
     {
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
+            $auditLog->record($user, 'updated', $post);
             $this->addFlash('success', 'post.updated_successfully');
 
             return $this->redirectToRoute('admin_post_edit', ['id' => $post->getId()], Response::HTTP_SEE_OTHER);
@@ -159,7 +163,7 @@ final class BlogController extends AbstractController
      */
     #[Route('/{id:post}/delete', name: 'admin_post_delete', requirements: ['id' => Requirement::POSITIVE_INT], methods: ['POST'])]
     #[IsGranted('delete', subject: 'post')]
-    public function delete(Request $request, Post $post, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, Post $post, EntityManagerInterface $entityManager, AdminAuditLog $auditLog, #[CurrentUser] User $user): Response
     {
         /** @var string|null $token */
         $token = $request->getPayload()->get('token');
@@ -173,6 +177,7 @@ final class BlogController extends AbstractController
         // because foreign key support is not enabled by default in SQLite
         $post->getTags()->clear();
 
+        $auditLog->record($user, 'deleted', $post);
         $entityManager->remove($post);
         $entityManager->flush();
 

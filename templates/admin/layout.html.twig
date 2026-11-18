@@ -19,6 +19,11 @@
         </a>
     </li>
     <li class="nav-item">
+        <a class="nav-link {{ _route == 'admin_audit_log' ? 'active' }}" href="{{ path('admin_audit_log') }}">
+            <twig:ux:icon name="tabler:file-text"/> Audit log
+        </a>
+    </li>
+    <li class="nav-item">
         <a class="nav-link" href="{{ path('blog_index') }}">
             <twig:ux:icon name="tabler:home"/> {{ 'menu.back_to_blog'|trans }}
         </a>
