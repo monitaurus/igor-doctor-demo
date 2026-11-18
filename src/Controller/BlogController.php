@@ -20,6 +20,7 @@ use App\Repository\PostRepository;
 use App\Repository\TagRepository;
 use App\Service\Breadcrumbs;
 use App\Service\CommentDraftKeeper;
+use App\Service\PostListing;
 use App\Service\RecentlyViewedPosts;
 use App\Service\TagCloud;
 use Doctrine\ORM\EntityManagerInterface;
@@ -44,6 +45,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/blog')]
 final class BlogController extends AbstractController
 {
+    public function __construct(
+        private readonly PostListing $listing,
+    ) {
+    }
+
     /**
      * NOTE: For standard formats, Symfony will also automatically choose the best
      * Content-Type header for the response.
@@ -62,7 +68,13 @@ final class BlogController extends AbstractController
             $tag = $tags->findOneBy(['name' => $request->query->get('tag')]);
         }
 
-        $latestPosts = $posts->findLatest($page, $tag);
+        // "Show more posts per page" link of the blog index
+        $perPage = $request->query->getInt('per_page');
+        if (\in_array($perPage, PostListing::PER_PAGE_CHOICES, true)) {
+            $this->listing->setPostsPerPage($perPage);
+        }
+
+        $latestPosts = $posts->findLatest($page, $tag, $this->listing->getPostsPerPage());
 
         // Every template name also has two extensions that specify the format and
         // engine for that template.
@@ -71,6 +83,8 @@ final class BlogController extends AbstractController
             'paginator' => $latestPosts,
             'tagName' => $tag?->getName(),
             'tag_cloud' => $tagCloud->get(),
+            'per_page' => $this->listing->getPostsPerPage(),
+            'per_page_choices' => PostListing::PER_PAGE_CHOICES,
         ]);
     }
 

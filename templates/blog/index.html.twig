@@ -3,6 +3,13 @@
 {% block body_id 'blog_index' %}
 
 {% block main %}
+    <p class="text-end small" id="per-page">
+        Posts per page:
+        {% for choice in per_page_choices %}
+            {% if choice == per_page %}<strong>{{ choice }}</strong>{% else %}<a href="{{ path('blog_index', {per_page: choice, tag: tagName}) }}">{{ choice }}</a>{% endif %}
+        {% endfor %}
+    </p>
+
     {% for post in paginator.results %}
         {{ include('blog/_post.html.twig') }}
     {% else %}

@@ -40,7 +40,7 @@ class PostRepository extends ServiceEntityRepository
         parent::__construct($registry, Post::class);
     }
 
-    public function findLatest(int $page = 1, ?Tag $tag = null): Paginator
+    public function findLatest(int $page = 1, ?Tag $tag = null, int $pageSize = Paginator::PAGE_SIZE): Paginator
     {
         $qb = $this->createQueryBuilder('p')
             ->addSelect('a', 't')
@@ -56,7 +56,7 @@ class PostRepository extends ServiceEntityRepository
                 ->setParameter('tag', $tag);
         }
 
-        return new Paginator($qb)->paginate($page);
+        return new Paginator($qb, $pageSize)->paginate($page);
     }
 
     /**
