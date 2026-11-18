@@ -7,11 +7,12 @@
 namespace App\Service;
 
 use App\Pagination\Paginator;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * Display options of the post lists.
  */
-final class PostListing
+final class PostListing implements ResetInterface
 {
     public const PER_PAGE_CHOICES = [Paginator::PAGE_SIZE, 30];
 
@@ -25,6 +26,11 @@ final class PostListing
     public function setPostsPerPage(int $postsPerPage): void
     {
         $this->postsPerPage = $postsPerPage;
+    }
+
+    public function reset(): void
+    {
+        $this->postsPerPage = Paginator::PAGE_SIZE;
     }
 
     /**

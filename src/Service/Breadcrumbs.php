@@ -6,13 +6,14 @@
 
 namespace App\Service;
 
+use Symfony\Contracts\Service\ResetInterface;
 use Twig\Attribute\AsTwigFunction;
 
 /**
  * Breadcrumb trail shown under the navigation bar. Controllers add the pages
  * below the blog home; the layout renders the trail.
  */
-final class Breadcrumbs
+final class Breadcrumbs implements ResetInterface
 {
     /**
      * @var list<array{label: string, url: string|null}>
@@ -34,6 +35,11 @@ final class Breadcrumbs
     }
 
     public function clear(): void
+    {
+        $this->items = [];
+    }
+
+    public function reset(): void
     {
         $this->items = [];
     }

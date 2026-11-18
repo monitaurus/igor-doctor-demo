@@ -7,11 +7,12 @@
 namespace App\Service;
 
 use App\Entity\Post;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * Remembers the last posts the reader opened, for the "Recently viewed" sidebar.
  */
-final class RecentlyViewedPosts
+final class RecentlyViewedPosts implements ResetInterface
 {
     private const MAX = 5;
 
@@ -35,5 +36,10 @@ final class RecentlyViewedPosts
     public function all(): array
     {
         return $this->posts;
+    }
+
+    public function reset(): void
+    {
+        $this->posts = [];
     }
 }

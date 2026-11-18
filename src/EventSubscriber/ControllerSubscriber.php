@@ -14,6 +14,7 @@ namespace App\EventSubscriber;
 use App\Twig\SourceCodeExtension;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
+use IgorPhp\IgorBundle\Attribute\WorkerSafe;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
@@ -23,6 +24,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * @author Ryan Weaver <weaverryan@gmail.com>
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
  */
+#[WorkerSafe]
 final readonly class ControllerSubscriber implements EventSubscriberInterface
 {
     public function __construct(

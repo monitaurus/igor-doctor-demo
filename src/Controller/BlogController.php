@@ -136,14 +136,14 @@ final class BlogController extends AbstractController
     #[Route('/posts/{slug:post}.md', name: 'blog_post_markdown', requirements: ['slug' => Requirement::ASCII_SLUG], methods: ['GET'])]
     public function postMarkdown(Post $post): Response
     {
-        header('Content-Type: text/markdown; charset=utf-8');
-        header(\sprintf('Content-Disposition: attachment; filename="%s.md"', $post->getSlug()));
+        $body = '# '.$post->getTitle()."\n\n";
+        $body .= '_'.$post->getAuthor()?->getFullName().', '.$post->getPublishedAt()->format('Y-m-d')."_\n\n";
+        $body .= $post->getContent()."\n";
 
-        echo '# ', $post->getTitle(), "\n\n";
-        echo '_', $post->getAuthor()?->getFullName(), ', ', $post->getPublishedAt()->format('Y-m-d'), "_\n\n";
-        echo $post->getContent(), "\n";
-
-        exit;
+        return new Response($body, headers: [
+            'Content-Type' => 'text/markdown; charset=utf-8',
+            'Content-Disposition' => \sprintf('attachment; filename="%s.md"', $post->getSlug()),
+        ]);
     }
 
     /**
@@ -227,12 +227,11 @@ final class BlogController extends AbstractController
     }
 
     #[Route('/search', name: 'blog_search', methods: ['GET'])]
-    public function search(Breadcrumbs $breadcrumbs): Response
+    public function search(Request $request, Breadcrumbs $breadcrumbs): Response
     {
         $breadcrumbs->add('Search', $this->generateUrl('blog_search'));
 
-        // Kept from the first version of the blog, before it used the Request object
-        $query = isset($_GET['q']) ? trim((string) $_GET['q']) : '';
+        $query = $request->query->has('q') ? trim((string) $request->query->get('q')) : '';
 
         return $this->render('blog/search.html.twig', ['query' => $query]);
     }

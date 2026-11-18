@@ -7,18 +7,19 @@
 namespace App\Service;
 
 use App\Repository\TagRepository;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * Builds the tag cloud of the blog sidebar: every tag with the number of posts using it.
  */
-final class TagCloud
+final class TagCloud implements ResetInterface
 {
     /**
      * Computed once: the query joins every post.
      *
      * @var array<string, int>|null tag name => number of posts
      */
-    private static ?array $cloud = null;
+    private ?array $cloud = null;
 
     public function __construct(
         private readonly TagRepository $tags,
@@ -30,10 +31,15 @@ final class TagCloud
      */
     public function get(): array
     {
-        if (null === self::$cloud) {
-            self::$cloud = $this->tags->countPostsByTag();
+        if (null === $this->cloud) {
+            $this->cloud = $this->tags->countPostsByTag();
         }
 
-        return self::$cloud;
+        return $this->cloud;
+    }
+
+    public function reset(): void
+    {
+        $this->cloud = null;
     }
 }
