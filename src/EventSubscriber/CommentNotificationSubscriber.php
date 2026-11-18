@@ -14,11 +14,14 @@ namespace App\EventSubscriber;
 use App\Entity\Post;
 use App\Entity\User;
 use App\Event\CommentCreatedEvent;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -32,6 +35,8 @@ final readonly class CommentNotificationSubscriber implements EventSubscriberInt
         private MailerInterface $mailer,
         private UrlGeneratorInterface $urlGenerator,
         private TranslatorInterface $translator,
+        private EventDispatcherInterface $dispatcher,
+        private LoggerInterface $logger,
         #[Autowire('%app.notifications.email_sender%')]
         private string $sender,
     ) {
@@ -77,9 +82,16 @@ final readonly class CommentNotificationSubscriber implements EventSubscriberInt
             ->html($body)
         ;
 
+        // Send the e-mail once the response has been sent, so the reader does not wait for the mailer.
         // In config/packages/mailer.yaml the delivery of messages is disabled in the development environment.
-        // That's why you won't actually receive any email.
-        // However, you can inspect the contents of those unsent emails using the debug toolbar.
-        $this->mailer->send($email);
+        // That's why you won't actually receive any email: the log shows each notification sent.
+        $commentId = $comment->getId();
+        $this->dispatcher->addListener(KernelEvents::TERMINATE, function () use ($email, $emailAddress, $commentId): void {
+            $this->mailer->send($email);
+            $this->logger->notice('Comment notification sent to {to} for comment #{comment}.', [
+                'to' => $emailAddress,
+                'comment' => $commentId,
+            ]);
+        });
     }
 }
