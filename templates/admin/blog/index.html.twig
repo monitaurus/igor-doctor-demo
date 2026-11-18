@@ -22,7 +22,7 @@
                     avoid errors when the 'intl' PHP extension is not available and the application
                     is forced to use the limited "intl polyfill", which only supports UTC and GMT
                 #}
-                <td>{{ post.publishedAt|format_datetime('medium', 'short', '', 'UTC') }}</td>
+                <td>{{ post.publishedAt|format_datetime('medium', 'short', '', display_timezone()) }}</td>
                 <td class="text-right">
                     <div class="item-actions">
                         <a href="{{ path('admin_post_show', {id: post.id}) }}" class="btn btn-sm btn-secondary">

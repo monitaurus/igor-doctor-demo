@@ -122,11 +122,21 @@
             <footer>
                 <div class="container">
                     <div class="row">
-                        <div id="footer-copyright" class="col-md-6">
+                        <div id="footer-copyright" class="col-md-4">
                             <p>&copy; {{ 'now'|date('Y') }} - The Symfony Project</p>
                             <p>{{ 'mit_license'|trans }}</p>
                         </div>
-                        <div id="footer-resources" class="col-md-6">
+                        <div id="footer-timezone" class="col-md-4">
+                            <form method="get" class="d-flex align-items-center gap-2">
+                                <label for="display-tz" class="text-nowrap">Show dates in</label>
+                                <select id="display-tz" name="tz" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                                    {% for timezone in display_timezone_choices() %}
+                                        <option value="{{ timezone }}" {{ timezone == display_timezone() ? 'selected' }}>{{ timezone }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                        </div>
+                        <div id="footer-resources" class="col-md-4">
                             <p>
                                 <a rel="noopener noreferrer" target="_blank" href="https://twitter.com/symfony" title="Symfony on X (formerly Twitter)">
                                     <twig:ux:icon name="tabler:brand-x" font-size="28px" /> <span class="sr-only">X/Twitter</span>
