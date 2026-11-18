@@ -1,0 +1,35 @@
+services:
+  php-worker:
+    build: .
+    # Loopback only: the app leaks state on purpose
+    ports:
+      - "127.0.0.1:8080:80"
+    environment:
+      - SERVER_NAME=:80
+      - FRANKENPHP_CONFIG=worker ./public/index.php 1
+      - IGOR_RUNTIME_MODE=worker
+      - APP_ENV=dev
+      - APP_SECRET=leaky-blog-demo-secret
+    volumes:
+      - .:/app
+      - var-worker:/app/var
+    tty: true
+
+  php-classic:
+    build: .
+    ports:
+      - "127.0.0.1:8081:80"
+    environment:
+      - SERVER_NAME=:80
+      - FRANKENPHP_CONFIG=
+      - IGOR_RUNTIME_MODE=classic
+      - APP_ENV=dev
+      - APP_SECRET=leaky-blog-demo-secret
+    volumes:
+      - .:/app
+      - var-classic:/app/var
+    tty: true
+
+volumes:
+  var-worker:
+  var-classic:

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7da9d2d6ad7c2c87d65f888053a4e4a1",
+    "content-hash": "fd9dba5611e8fbd75051c19665140564",
     "packages": [
         {
             "name": "composer/semver",
@@ -8708,6 +8708,68 @@
                 }
             ],
             "time": "2026-06-19T14:45:22+00:00"
+        },
+        {
+            "name": "igor-php/igor-php",
+            "version": "v0.11.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/igor-php/igor-php.git",
+                "reference": "0ce6295d7c3546e7b8d8146a60f3ddff7a1d38a7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/igor-php/igor-php/zipball/0ce6295d7c3546e7b8d8146a60f3ddff7a1d38a7",
+                "reference": "0ce6295d7c3546e7b8d8146a60f3ddff7a1d38a7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "bin": [
+                "bin/igor-php"
+            ],
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "IgorPhp\\Laravel\\IgorServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "IgorPhp\\Laravel\\": "src/laravel/",
+                    "IgorPhp\\IgorBundle\\": "src/php/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kevin MARTINS",
+                    "email": "kevin.martins@me.com"
+                }
+            ],
+            "description": "The faithful assistant for your FrankenPHP Workers: finds the state that leaks between requests in Symfony and Laravel Octane apps, from the CLI, PhpStorm, Claude Code or any MCP client.",
+            "keywords": [
+                "frankenphp",
+                "laravel",
+                "linter",
+                "mcp",
+                "memory-leak",
+                "octane",
+                "static-analysis",
+                "symfony",
+                "worker"
+            ],
+            "support": {
+                "issues": "https://github.com/igor-php/igor-php/issues",
+                "source": "https://github.com/igor-php/igor-php/tree/v0.11.0"
+            },
+            "time": "2026-11-14T15:18:44+00:00"
         },
         {
             "name": "myclabs/deep-copy",
