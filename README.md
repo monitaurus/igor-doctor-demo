@@ -24,8 +24,8 @@ make start
 | <http://localhost:8080> | **Worker mode**: Symfony boots once, one PHP worker serves every request |
 | <http://localhost:8081> | **Classic mode**: Symfony boots on every request, nothing leaks |
 
-The badge in the bottom-right corner shows the mode and the PHP process id: in worker mode the PID stays the same from
-one request to the next. Both services use the bundled SQLite database (`data/database.sqlite`). Users: `jane_admin` /
+The badge in the bottom-right corner shows the mode and a boot id: in worker mode it stays the same from
+one request to the next, until the worker restarts. Both services use the bundled SQLite database (`data/database.sqlite`). Users: `jane_admin` /
 `kitten` (admin) and `john_user` / `kitten`.
 
 `make restart` restarts the workers (needed after changing `src/`), `make stop` stops everything,
@@ -47,9 +47,9 @@ same on the classic URL: nothing leaks there.
 | 4 | Reading time of each post | As `jane_admin`, double the length of a post you have already viewed. | Its reading time does not change. | `LocalStaticVariable` |
 | 5 | "Show dates in" timezone picker (footer) | A picks `Asia/Tokyo`. B, who never picked one, reloads. | B sees dates in Tokyo time. | `ProcessStateMutation` |
 | 6 | Search | Search for `lorem`. | Works in the browser, but the search reads `$_GET`: the test client does not fill it, so `testAjaxSearch` fails. | `SuperglobalsUsage` |
-| 7 | Comment notifications sent after the response | Post three comments, then `make logs`. | The 2nd comment sends 2 notifications, the 3rd sends 3. | `DetectClosureStateLeak` |
+| 7 | Comment notifications sent after the response | As `john_user`, comment on a post, open two pages, then `make logs`. | Every request after the comment sends its notification again (3 notifications for 1 comment). | `DetectClosureStateLeak` |
 | 8 | Admin audit log (`/admin/audit-log`) | As `jane_admin`, edit a post, then open the audit log. | Empty: it is written in `__destruct()`, which runs only when the worker stops. | `MagicMethodDestruct` |
-| 9 | "Download as Markdown" on a post | Download a post, then reload the page. | The PID in the badge changed: `exit` killed the worker, and every in-memory state with it. | `ExecutionTerminator` |
+| 9 | "Download as Markdown" on a post | Download a post, then reload the page. | The boot id in the badge changed: `exit` killed the worker, and every in-memory state with it. | `ExecutionTerminator` |
 | 10 | Breadcrumbs | Open a post, then search, then another post. | The trail keeps growing with every page anyone opened. | `MissingResetTag` |
 | 11 | "Posts per page: 10 30" on the blog index | A clicks `30`. B opens the blog. | B gets 30 posts per page. | `DetectSingletonMutation` |
 | 12 | Search index listener | (log only) A failed save is followed by a successful one. | The failed post is indexed with the next save. | `DoctrineFlushState` |

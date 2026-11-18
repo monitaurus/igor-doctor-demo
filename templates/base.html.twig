@@ -170,10 +170,10 @@
             avoid errors when the 'intl' PHP extension is not available and the application
             is forced to use the limited "intl polyfill", which only supports UTC and GMT
         #}
-        {# Leaky Blog: how this page was served. In worker mode the PID stays the same from one request to the next. #}
+        {# Leaky Blog: how this page was served. In worker mode the boot id stays the same until the worker restarts. #}
         <div id="runtime-badge" class="badge {{ runtime_mode() == 'worker' ? 'text-bg-danger' : 'text-bg-secondary' }}"
              style="position: fixed; bottom: 12px; right: 12px; z-index: 1080; font-size: .85rem;">
-            {{ runtime_mode()|upper }} mode &middot; PID {{ worker_pid() }}
+            {{ runtime_mode()|upper }} mode &middot; boot {{ boot_id() }}
         </div>
 
         <!-- Page rendered on {{ 'now'|format_datetime('long', 'long', '', 'UTC') }} -->
