@@ -1,0 +1,10 @@
+{% if recently_viewed is not empty %}
+    <div class="section" id="recently-viewed">
+        <h3 class="h5"><twig:ux:icon name="tabler:history"/> Recently viewed</h3>
+        <ul class="list-unstyled">
+            {% for slug, title in recently_viewed %}
+                <li><a href="{{ path('blog_post', {slug}) }}">{{ title }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}

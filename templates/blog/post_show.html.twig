@@ -79,6 +79,8 @@
         ('base.html.twig') for this block ('sidebar'). This is a very convenient way
         to share common contents in different templates
     #}
+    {{ include('blog/_recently_viewed.html.twig') }}
+
     {{ parent() }}
 
     {{ show_source_code(_self) }}
