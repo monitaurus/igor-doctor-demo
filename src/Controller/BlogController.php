@@ -18,11 +18,13 @@ use App\Event\CommentCreatedEvent;
 use App\Form\CommentType;
 use App\Repository\PostRepository;
 use App\Repository\TagRepository;
+use App\Service\CommentDraftKeeper;
 use App\Service\RecentlyViewedPosts;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\Cache;
@@ -117,6 +119,8 @@ final class BlogController extends AbstractController
         #[MapEntity(mapping: ['postSlug' => 'slug'])] Post $post,
         EventDispatcherInterface $eventDispatcher,
         EntityManagerInterface $entityManager,
+        CommentDraftKeeper $draftKeeper,
+        RecentlyViewedPosts $recentlyViewed,
     ): Response {
         $comment = new Comment();
         $comment->setAuthor($user);
@@ -143,10 +147,19 @@ final class BlogController extends AbstractController
             return $this->redirectToRoute('blog_post', ['slug' => $post->getSlug()], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('blog/comment_form_error.html.twig', [
+        // Show the post again: the comment form, rendered in a sub-request, picks the
+        // rejected text and the reason from the draft keeper.
+        $errors = [];
+        foreach ($form->getErrors(true) as $error) {
+            $errors[] = $error->getMessage();
+        }
+        $draftKeeper->keep($user, (string) $comment->getContent(), implode(' ', $errors));
+        $post->removeComment($comment);
+
+        return $this->render('blog/post_show.html.twig', [
             'post' => $post,
-            'form' => $form,
-        ]);
+            'recently_viewed' => $recentlyViewed->all(),
+        ], new Response(status: Response::HTTP_UNPROCESSABLE_ENTITY));
     }
 
     /**
@@ -154,9 +167,17 @@ final class BlogController extends AbstractController
      * blog/post_show.html.twig template. That's why it's not needed to define
      * a route name for it.
      */
-    public function commentForm(Post $post): Response
+    public function commentForm(Post $post, CommentDraftKeeper $draftKeeper): Response
     {
-        $form = $this->createForm(CommentType::class);
+        $comment = new Comment();
+        if (null !== $draft = $draftKeeper->getDraft()) {
+            $comment->setContent($draft);
+        }
+
+        $form = $this->createForm(CommentType::class, $comment);
+        if (null !== $error = $draftKeeper->getError()) {
+            $form->addError(new FormError($error));
+        }
 
         return $this->render('blog/_comment_form.html.twig', [
             'post' => $post,

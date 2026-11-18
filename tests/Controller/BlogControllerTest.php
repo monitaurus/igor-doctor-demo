@@ -90,6 +90,28 @@ final class BlogControllerTest extends WebTestCase
         $this->assertSame('Hi, Symfony!', $newComment);
     }
 
+    public function testRejectedCommentIsShownAgainWithItsText(): void
+    {
+        $client = static::createClient();
+
+        /** @var UserRepository $userRepository */
+        $userRepository = $client->getContainer()->get(UserRepository::class);
+
+        /** @var User $user */
+        $user = $userRepository->findOneByUsername('jane_admin');
+
+        $client->loginUser($user);
+
+        $crawler = $client->request('GET', '/en/blog/');
+        $client->click($crawler->filter('article.post > h2 a')->link());
+        $crawler = $client->submitForm('Publish comment', [
+            'comment[content]' => 'Write to me at jane@example.com',
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame('Write to me at jane@example.com', $crawler->filter('#comment_content')->text());
+    }
+
     public function testAjaxSearch(): void
     {
         $client = static::createClient();
