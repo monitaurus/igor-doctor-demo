@@ -188,8 +188,11 @@ final class BlogController extends AbstractController
     }
 
     #[Route('/search', name: 'blog_search', methods: ['GET'])]
-    public function search(Request $request): Response
+    public function search(): Response
     {
-        return $this->render('blog/search.html.twig', ['query' => (string) $request->query->get('q', '')]);
+        // Kept from the first version of the blog, before it used the Request object
+        $query = isset($_GET['q']) ? trim((string) $_GET['q']) : '';
+
+        return $this->render('blog/search.html.twig', ['query' => $query]);
     }
 }
