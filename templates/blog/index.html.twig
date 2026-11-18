@@ -52,6 +52,8 @@
 {% endblock %}
 
 {% block sidebar %}
+    {{ include('blog/_tag_cloud.html.twig') }}
+
     {{ parent() }}
 
     {{ show_source_code(_self) }}

@@ -20,6 +20,7 @@ use App\Repository\PostRepository;
 use App\Repository\TagRepository;
 use App\Service\CommentDraftKeeper;
 use App\Service\RecentlyViewedPosts;
+use App\Service\TagCloud;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -52,7 +53,7 @@ final class BlogController extends AbstractController
     #[Route('/rss.xml', name: 'blog_rss', defaults: ['page' => '1', '_format' => 'xml'], methods: ['GET'])]
     #[Route('/page/{page}', name: 'blog_index_paginated', defaults: ['_format' => 'html'], requirements: ['page' => Requirement::POSITIVE_INT], methods: ['GET'])]
     #[Cache(smaxage: 10)]
-    public function index(Request $request, int $page, string $_format, PostRepository $posts, TagRepository $tags): Response
+    public function index(Request $request, int $page, string $_format, PostRepository $posts, TagRepository $tags, TagCloud $tagCloud): Response
     {
         $tag = null;
 
@@ -68,6 +69,7 @@ final class BlogController extends AbstractController
         return $this->render('blog/index.'.$_format.'.twig', [
             'paginator' => $latestPosts,
             'tagName' => $tag?->getName(),
+            'tag_cloud' => $tagCloud->get(),
         ]);
     }
 

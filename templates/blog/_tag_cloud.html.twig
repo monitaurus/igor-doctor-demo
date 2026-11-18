@@ -1,0 +1,12 @@
+{% if tag_cloud is not empty %}
+    <div class="section" id="tag-cloud">
+        <h3 class="h5"><twig:ux:icon name="tabler:tags"/> Tags</h3>
+        <p>
+            {% for name, count in tag_cloud %}
+                <a href="{{ path('blog_index', {tag: name}) }}" class="badge text-bg-light text-decoration-none me-1">
+                    {{ name }} <span class="text-secondary">{{ count }}</span>
+                </a>
+            {% endfor %}
+        </p>
+    </div>
+{% endif %}

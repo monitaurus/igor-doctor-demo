@@ -32,4 +32,23 @@ class TagRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Tag::class);
     }
+
+    /**
+     * @return array<string, int> tag name => number of posts, most used first
+     */
+    public function countPostsByTag(): array
+    {
+        /** @var list<array{name: string, posts: int|string}> $rows */
+        $rows = $this->createQueryBuilder('t')
+            ->select('t.name AS name', 'COUNT(p.id) AS posts')
+            ->innerJoin('App\\Entity\\Post', 'p', 'WITH', 't MEMBER OF p.tags')
+            ->groupBy('t.id')
+            ->orderBy('posts', 'DESC')
+            ->addOrderBy('t.name', 'ASC')
+            ->getQuery()
+            ->getArrayResult()
+        ;
+
+        return array_combine(array_column($rows, 'name'), array_map('intval', array_column($rows, 'posts')));
+    }
 }
