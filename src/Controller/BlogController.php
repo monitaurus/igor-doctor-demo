@@ -16,6 +16,7 @@ use App\Entity\Post;
 use App\Entity\User;
 use App\Event\CommentCreatedEvent;
 use App\Form\CommentType;
+use App\Pagination\Paginator;
 use App\Repository\PostRepository;
 use App\Repository\TagRepository;
 use App\Service\Breadcrumbs;
@@ -74,7 +75,15 @@ final class BlogController extends AbstractController
             $this->listing->setPostsPerPage($perPage);
         }
 
-        $latestPosts = $posts->findLatest($page, $tag, $this->listing->getPostsPerPage());
+        if ('xml' === $_format) {
+            // Feed readers always get the default number of items, whatever the page size
+            $latestPosts = $this->listing->withPostsPerPage(
+                Paginator::PAGE_SIZE,
+                fn () => $posts->findLatest($page, $tag, $this->listing->getPostsPerPage()),
+            );
+        } else {
+            $latestPosts = $posts->findLatest($page, $tag, $this->listing->getPostsPerPage());
+        }
 
         // Every template name also has two extensions that specify the format and
         // engine for that template.
