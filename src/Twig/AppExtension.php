@@ -11,7 +11,9 @@
 
 namespace App\Twig;
 
+use App\Entity\Post;
 use Symfony\Component\Intl\Locales;
+use Twig\Attribute\AsTwigFilter;
 use Twig\Attribute\AsTwigFunction;
 
 /**
@@ -58,6 +60,18 @@ final class AppExtension
         }
 
         return $this->locales;
+    }
+
+    /**
+     * Estimated reading time of a post, in minutes (200 words per minute).
+     * Memoized per post: the filter is used on every teaser of the blog index.
+     */
+    #[AsTwigFilter('reading_time')]
+    public function readingTime(Post $post): int
+    {
+        static $minutes = [];
+
+        return $minutes[$post->getId()] ??= max(1, (int) ceil(str_word_count(strip_tags((string) $post->getContent())) / 200));
     }
 
     /**

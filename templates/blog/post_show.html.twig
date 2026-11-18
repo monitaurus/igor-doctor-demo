@@ -8,6 +8,7 @@
     <p class="post-metadata">
         <span class="metadata"><twig:ux:icon name="tabler:calendar-month"/> {{ post.publishedAt|format_datetime('long', 'medium', '', 'UTC') }}</span>
         <span class="metadata"><twig:ux:icon name="tabler:user"/> {{ post.author.fullName }}</span>
+        <span class="metadata reading-time"><twig:ux:icon name="tabler:clock"/> {{ post|reading_time }} min read</span>
     </p>
 
     {{ post.content|markdown_to_html|sanitize_html }}
