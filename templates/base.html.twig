@@ -172,7 +172,7 @@
         #}
         {# Leaky Blog: how this page was served. In worker mode the boot id stays the same until the worker restarts. #}
         <div id="runtime-badge" class="badge {{ runtime_mode() == 'worker' ? 'text-bg-danger' : 'text-bg-secondary' }}"
-             style="position: fixed; bottom: 12px; right: 12px; z-index: 1080; font-size: .85rem;">
+             style="position: fixed; bottom: 48px; right: 12px; z-index: 1080; font-size: .85rem;">
             {{ runtime_mode()|upper }} mode &middot; boot {{ boot_id() }}
         </div>
 
